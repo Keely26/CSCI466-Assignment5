@@ -127,6 +127,27 @@ class Host:
 
 
 ## Implements a multi-interface router
+class MPLSFrame():
+    label_S_len = 10
+
+    def __init__(self, packet, label_S):
+        self.packet = packet
+        self.label_S = label_S
+
+    def __str__(self):
+        return self.to_byte_S()
+
+    def to_byte_S(self):
+        byte_S = self.label_S.zfill(self.label_S_len)
+        byte_S += self.packet
+        return byte_S
+
+    def from_byte_S(self, byte_S):
+        label_S = byte_S[0: self.label_S_len].lstrip('0')
+        packet = byte_S[self.label_S_len:]
+        return self(packet, label_S)
+
+
 class Router:
 
     ##@param name: friendly router name for debugging
@@ -166,9 +187,9 @@ class Router:
                 self.process_network_packet(p, i)
             elif fr.type_S == "MPLS":
                 # TODO: handle MPLS frames
-                # m_fr = MPLSFrame.from_byte_S(pkt_S) #parse a frame out
+                m_fr = MPLSFrame.from_byte_S(pkt_S)  # parse a frame out
                 # for now, we just relabel the packet as an MPLS frame without encapsulation
-                m_fr = p
+                #m_fr = p
                 # send the MPLS frame for processing
                 self.process_MPLS_frame(m_fr, i)
             else:
@@ -179,11 +200,15 @@ class Router:
     #  @param i Incoming interface number for packet p
     def process_network_packet(self, pkt, i):
         # TODO: encapsulate the packet in an MPLS frame based on self.encap_tbl_D
-        # for now, we just relabel the packet as an MPLS frame without encapsulation
-        m_fr = pkt
-        print('%s: encapsulated packet "%s" as MPLS frame "%s"' % (self, pkt, m_fr))
-        # send the encapsulated packet for processing as MPLS frame
-        self.process_MPLS_frame(m_fr, i)
+        e = self.encap_tbl_D.get(pkt.dst)  # packet destination
+        print("TEST")
+        print(e)
+        if e is not None:  # if destination is in encap table
+            m_fr = MPLSFrame(pkt.to_byte_S(), e)  # encap it
+            print('%s: encapsulated packet "%s" as MPLS frame "%s"' % (self, pkt, m_fr))
+
+            # send encap packet
+            self.process_MPLS_frame(m_fr, i)
 
     ## process an MPLS frame incoming to this router
     #  @param m_fr: MPLS frame to process
@@ -207,4 +232,4 @@ class Router:
             self.process_queues()
             if self.stop:
                 print(threading.currentThread().getName() + ': Ending')
-                return 
+                return
