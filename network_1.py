@@ -48,7 +48,7 @@ class Interface:
 # the fields necessary for the completion of this assignment.
 class NetworkPacket:
     ## packet encoding lengths
-    dst_S_length = 5
+    dst_S_length = 3
 
     ##@param dst: address of the destination host
     # @param data_S: packet payload
@@ -128,7 +128,7 @@ class Host:
 
 ## Implements a multi-interface router
 class MPLSFrame():
-    label_S_len = 10
+    label_S_len = 1
 
     def __init__(self, packet, label_S):
         self.packet = packet
@@ -216,14 +216,30 @@ class Router:
     def process_MPLS_frame(self, m_fr, i):
         # TODO: implement MPLS forward, or MPLS decapsulation if this is the last hop router for the path
         print('%s: processing MPLS frame "%s"' % (self, m_fr))
-        # for now forward the frame out interface 1
-        try:
-            fr = LinkFrame('Network', m_fr.to_byte_S())
-            self.intf_L[1].put(fr.to_byte_S(), 'out', True)
-            print('%s: forwarding frame "%s" from interface %d to %d' % (self, fr, i, 1))
-        except queue.Full:
-            print('%s: frame "%s" lost on interface %d' % (self, m_fr, i))
-            pass
+        print("M_FR LABEL_S: ", m_fr.label_S)
+        d = self.decap_tbl_D.get(m_fr.label_S) # check if packet needs to be decapsulated
+        print("D IS: ", d)
+        if d is not None:
+            pkt = m_fr.packet
+            out_intf = d
+            try:
+                fr = LinkFrame('Network', pkt)
+                self.intf_L[out_intf].put(fr.to_byte_S(), 'out', True)
+                print('%s: forwarding frame "%s" from interface %d to %d' % (self, fr, i, out_intf))
+            except queue.Full:
+                print('%s: frame "%s" lost on interface %d' % (self, pkt, i))
+                pass
+        # else send out on interface 1
+        else:
+            try:
+                fr = LinkFrame('Network', m_fr.to_byte_S())
+                self.intf_L[1].put(fr.to_byte_S(), 'out', True)
+                print('%s: forwarding frame "%s" from interface %d to %d' % (self, fr, i, 1))
+            except queue.Full:
+                print('%s: frame "%s" lost on interface %d' % (self, m_fr, i))
+                pass
+
+
 
     ## thread target for the host to keep forwarding data
     def run(self):

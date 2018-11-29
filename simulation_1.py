@@ -18,8 +18,10 @@ if __name__ == '__main__':
     host_2 = Host('H2')
     object_L.append(host_2)
 
+    # {destination: encapsulate?}
     # create routers and routing tables for connected clients (subnets)
     encap_tbl_D = {'H2' : '2'}  # table used to encapsulate network packets into MPLS frames
+    # frwd_tbl_D = {'RA': (1, 'RA'), 'RB': (0, 'RB')}  # table used to forward MPLS frames
     frwd_tbl_D = {(0, '2') : (1, '2'), (1, '1') : (0, '1')}  # table used to forward MPLS frames
     decap_tbl_D = {'2' : 0}  # table used to decapsulate network packets from MPLS frames
     router_a = Router(name='RA',
@@ -31,6 +33,7 @@ if __name__ == '__main__':
     object_L.append(router_a)
 
     encap_tbl_D = {'H1' : '1'}
+    #frwd_tbl_D = {'RB': (0, 'RB'), 'RA': (1, 'RA')}
     frwd_tbl_D = {(1, '1') : (0, '1'), (0, '2') : (1, '2')}
     decap_tbl_D = {'1' : 1}
     router_b = Router(name='RB',
