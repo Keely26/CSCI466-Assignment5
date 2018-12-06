@@ -231,13 +231,16 @@ class Router:
                 pass
         # else send out on interface 1
         else:
-            try:
-                fr = LinkFrame('Network', m_fr.to_byte_S())
-                self.intf_L[1].put(fr.to_byte_S(), 'out', True)
-                print('%s: forwarding frame "%s" from interface %d to %d' % (self, fr, i, 1))
-            except queue.Full:
-                print('%s: frame "%s" lost on interface %d' % (self, m_fr, i))
-                pass
+            table = self.frwd_tbl_D[(i, m_fr.label_S)]
+            if table is not None:
+                out_intf = table[0]
+                try:
+                    fr = LinkFrame('Network', m_fr.to_byte_S())
+                    self.intf_L[out_intf].put(fr.to_byte_S(), 'out', True)
+                    print('%s: forwarding frame "%s" from interface %d to %d' % (self, fr, i, 1))
+                except queue.Full:
+                    print('%s: frame "%s" lost on interface %d' % (self, m_fr, i))
+                    pass
 
 
 
