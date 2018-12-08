@@ -20,10 +20,16 @@ if __name__ == '__main__':
 
     # {destination: encapsulate?}
     # create routers and routing tables for connected clients (subnets)
-    encap_tbl_D = {'H2' : '2'}  # table used to encapsulate network packets into MPLS frames
+    #encap_tbl_D = {'H2' : '2'}  # table used to encapsulate network packets into MPLS frames
     # frwd_tbl_D = {'RA': (1, 'RA'), 'RB': (0, 'RB')}  # table used to forward MPLS frames
-    frwd_tbl_D = {(0, '2') : (1, '2'), (1, '1') : (0, '1')}  # table used to forward MPLS frames
-    decap_tbl_D = {'2' : 0}  # table used to decapsulate network packets from MPLS frames
+    #frwd_tbl_D = {(0, '2') : (1, '2'), (1, '1') : (0, '1')}  # table used to forward MPLS frames
+    #encap_tbl_D = {0:1}
+    #frwd_tbl_D = {'1': 1}
+    #decap_tbl_D = {'2': 0}  # table used to decapsulate network packets from MPLS frames
+    #decap_tbl_D = {}
+    encap_tbl_D = {'H2': '5'}  # table used to encapsulate network packets into MPLS frames
+    frwd_tbl_D = {(0, '5') : (1, '5'), (1, '6') : (0, '6')}
+    decap_tbl_D = {'6': 1}
     router_a = Router(name='RA',
                       intf_capacity_L=[500, 500],
                       encap_tbl_D=encap_tbl_D,
@@ -32,10 +38,17 @@ if __name__ == '__main__':
                       max_queue_size=router_queue_size)
     object_L.append(router_a)
 
-    encap_tbl_D = {'H1' : '1'}
+    #encap_tbl_D = {'H1' : '1'}
+    #encap_tbl_D = {}
     #frwd_tbl_D = {'RB': (0, 'RB'), 'RA': (1, 'RA')}
-    frwd_tbl_D = {(1, '1') : (0, '1'), (0, '2') : (1, '2')}
-    decap_tbl_D = {'1' : 1}
+    #frwd_tbl_D = {(1, '1') : (0, '1'), (0, '2') : (1, '2')}
+    #frwd_tbl_D = {(0, '2'): (1, '2'), (1, '1'): (0, '1')}
+    #frwd_tbl_D = {'1': 1}
+    #decap_tbl_D = {'1' : 1}
+    #decap_tbl_D = {'1': 1}
+    encap_tbl_D = {'H1': '6'}  # table used to encapsulate network packets into MPLS frames
+    frwd_tbl_D = {(1, '6') : (0, '6'), (0, '5') : (1, '5')}
+    decap_tbl_D = {'5': 1}
     router_b = Router(name='RB',
                       intf_capacity_L=[500, 100],
                       encap_tbl_D=encap_tbl_D,
