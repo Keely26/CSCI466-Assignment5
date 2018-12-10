@@ -53,10 +53,11 @@ class NetworkPacket:
     ##@param dst: address of the destination host
     # @param data_S: packet payload
     # @param priority: packet priority
-    def __init__(self, dst, data_S, priority=0):
+    def __init__(self, dst, data_S, priority):
         self.dst = dst
         self.data_S = data_S
         # TODO: add priority to the packet class
+        self.priority = priority
 
     ## called when printing the object
     def __str__(self):
@@ -64,7 +65,8 @@ class NetworkPacket:
 
     ## convert packet to a byte string for transmission over links
     def to_byte_S(self):
-        byte_S = str(self.dst).zfill(self.dst_S_length)
+        byte_S = str(self.priority)
+        byte_S += str(self.dst).zfill(self.dst_S_length)
         byte_S += self.data_S
         return byte_S
 
@@ -72,9 +74,10 @@ class NetworkPacket:
     # @param byte_S: byte string representation of the packet
     @classmethod
     def from_byte_S(self, byte_S):
-        dst = byte_S[0: NetworkPacket.dst_S_length].strip('0')
+        priority = byte_S[0:1]
+        dst = byte_S[1: NetworkPacket.dst_S_length-1].strip('0')
         data_S = byte_S[NetworkPacket.dst_S_length:]
-        return self(dst, data_S)
+        return self(dst, data_S, priority)
 
 
 ## Implements a network host for receiving and transmitting data
@@ -94,8 +97,8 @@ class Host:
     # @param dst: destination address for the packet
     # @param data_S: data being transmitted to the network layer
     # @param priority: packet priority
-    def udt_send(self, dst, data_S, priority=0):
-        pkt = NetworkPacket(dst, data_S)
+    def udt_send(self, dst, data_S, priority):
+        pkt = NetworkPacket(dst, data_S, priority)
         print('%s: sending packet "%s" with priority %d' % (self, pkt, priority))
         # encapsulate network packet in a link frame (usually would be done by the OS)
         fr = LinkFrame('Network', pkt.to_byte_S())
@@ -172,7 +175,7 @@ class Router:
                 # send the MPLS frame for processing
                 self.process_MPLS_frame(m_fr, i)
             else:
-                raise ('%s: unknown frame type: %s' % (self, fr.type))
+                raise ('%s: unknown frame type: %s' % (self, fr.type_S))
 
     ## process a network packet incoming to this router
     #  @param p Packet to forward
